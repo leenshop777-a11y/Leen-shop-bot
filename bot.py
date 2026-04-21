@@ -2,10 +2,16 @@ import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
-TOKEN = "ضعي_التوكن_حق_البوت_هنا"
+TOKEN = 8432218715:AAGCaMGfnGc6pXfiOUf2reCRu1ThzvENGk4
 WALLET = "THcyK4g5HzhwJQ7c8a9NNMXb9EnrM9qZBh"
 
 FILES = {
+    "planner2026": {"name": "Royal 90-Day Business Planner 2026", "price": "$37", "link": "https://drive.google.com/file/d/10JqPCJ4DsRn_8grXNZR2Y0KswypHF4YI/view?usp=sharing"},
+    "fashion": {"name": "دليل الأزياء الراقية", "price": "$15", "link": "حطي_رابط_الكتاب_هنا"},
+    "projects": {"name": "300 فكرة مشروع", "price": "$20", "link": "حطي_رابط_الكتاب_هنا"},
+    "richdad": {"name": "ملخص كتاب الأب الغني", "price": "$10", "link": "حطي_رابط_الكتاب_هنا"},
+    "habits": {"name": "كتاب العادات الذرية", "price": "$12", "link": "حطي_رابط_الكتاب_هنا"},
+}
     "fashion": {"name": "دليل الأزياء الراقية", "price": 4, "link": "حطي_رابط_PDF_1"},
     "projects": {"name": "300 فكرة مشروع", "price": 3, "link": "حطي_رابط_PDF_2"},
     "richdad": {"name": "ملخص كتاب الأب الغني", "price": 2, "link": "حطي_رابط_PDF_3"},
