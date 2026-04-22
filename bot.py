@@ -5,10 +5,10 @@ from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# ===== 1. حط توكن البوت حقك هنا =====
-TOKEN = " 8432218715:AAGCaMGfnGc6pXfiOUf2reCRu1ThzvENGk4" # ⚠️ من BotFather
+# ===== 1. التوكن من Environment Variables =====
+TOKEN = os.environ.get('TOKEN')
 
-# ===== 2. منتجاتك الحقيقية - جاهزة =====
+# ===== 2. منتجاتك الحقيقية =====
 PRODUCTS = {
     "p1": {
         "name_ar": "من الصفر إلى ألف دولار",
@@ -31,15 +31,15 @@ PRODUCTS = {
     "p3": {
         "name_ar": "لين سليم سيكريت برو",
         "name_en": "Leen Slim Secret Pro",
-        "price_ar":"27"دولار
-        "price_en": "$27",
+        "price_ar": "تواصل للسعر",
+        "price_en": "Contact for price",
         "desc_ar": "برنامج لين سليم سيكريت برو الاحترافي. تواصل معنا لمعرفة السعر والتفاصيل.",
         "desc_en": "Leen Slim Secret Pro program. Contact us for price and details.",
         "link": "https://drive.google.com/file/d/1ZD9XWSD1jmczhJix7DbZ_EJ0ccAvyLRt/view?usp=drivesdk"
     }
 }
 
-# ===== 3. نصوص البوت باللغتين =====
+# ===== 3. نصوص البوت =====
 TEXTS = {
     "ar": {
         "welcome": "أهلاً بك في متجر لين 🌸\nاختاري اللغة:",
@@ -65,4 +65,59 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("العربية 🇸🇦", callback_data='lang_ar')],
         [InlineKeyboardButton("English 🇺🇸", callback_data='lang_en')]
     ]
-    await update.message.reply_text(TEXTS["ar"]["welcome
+    await update.message.reply_text(TEXTS["ar"]["welcome"], reply_markup=InlineKeyboardMarkup(keyboard))
+
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+
+    if data == 'lang_ar' or data == 'lang_en':
+        lang = 'ar' if data == 'lang_ar' else 'en'
+        context.user_data['lang'] = lang
+        keyboard = []
+        for pid, product in PRODUCTS.items():
+            name = product[f'name_{lang}']
+            price = product[f'price_{lang}']
+            keyboard.append([InlineKeyboardButton(f"{name} - {price}", callback_data=f'prod_{pid}')])
+
+        await query.edit_message_text(text=TEXTS[lang]['main_menu'], reply_markup=InlineKeyboardMarkup(keyboard))
+
+    elif data.startswith('prod_'):
+        lang = context.user_data.get('lang', 'ar')
+        pid = data.split('_')[1]
+        product = PRODUCTS[pid]
+
+        name = product[f'name_{lang}']
+        price = product[f'price_{lang}']
+        desc = product[f'desc_{lang}']
+        link = product['link']
+
+        text = f"**{name}**\n\n{TEXTS[lang]['price']} {price}\n\n{desc}"
+
+        keyboard = [
+            [InlineKeyboardButton(TEXTS[lang]['download'], url=link)],
+            [InlineKeyboardButton(TEXTS[lang]['back'], callback_data=f'lang_{lang}')]
+        ]
+        await query.edit_message_text(text=text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
+
+# ===== 5. كود Flask لـ Render =====
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Leen Shop Bot is running 24/7"
+
+def run_flask():
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
+
+def main():
+    application = Application.builder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CallbackQueryHandler(button))
+    Thread(target=run_flask).start()
+    application.run_polling()
+
+if __name__ == '__main__':
+    main()
