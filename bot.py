@@ -1,45 +1,48 @@
-import os
+import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-TOKEN = 8432218715:AAGCaMGfnGc6pXfiOUf2reCRu1ThzvENGk4
-WALLET = "THcyK4g5HzhwJQ7c8a9NNMXb9EnrM9qZBh"
+TOKEN = "8432218715:AAGCaMGfnGc6pXfi0Uf2reC6pXfi0Uf2reCRu1ThzvENGk4"
 
+# منتجاتك الجاهزة فقط
 FILES = {
     "planner2026": {"name": "Royal 90-Day Business Planner 2026", "price": "$37", "link": "https://drive.google.com/file/d/10JqPCJ4DsRn_8grXNZR2Y0KswypHF4YI/view?usp=sharing"},
-    "fashion": {"name": "دليل الأزياء الراقية", "price": "$15", "link": "حطي_رابط_الكتاب_هنا"},
-    "projects": {"name": "300 فكرة مشروع", "price": "$20", "link": "حطي_رابط_الكتاب_هنا"},
-    "richdad": {"name": "ملخص كتاب الأب الغني", "price": "$10", "link": "حطي_رابط_الكتاب_هنا"},
-    "habits": {"name": "كتاب العادات الذرية", "price": "$12", "link": "حطي_رابط_الكتاب_هنا"},
-}
-    "fashion": {"name": "دليل الأزياء الراقية", "price": 4, "link": "حطي_رابط_PDF_1"},
-    "projects": {"name": "300 فكرة مشروع", "price": 3, "link": "حطي_رابط_PDF_2"},
-    "richdad": {"name": "ملخص كتاب الأب الغني", "price": 2, "link": "حطي_رابط_PDF_3"},
-    "habits": {"name": "كتاب العادات الذرية", "price": 3, "link": "حطي_رابط_PDF_4"}
+    "slim7days": {"name": "7 Days Slim Secret", "price": "$27", "link": "https://drive.google.com/file/d/1ZD9XWSD1jmczhJix7DbZ_EJ0ccAvyLRt/view?usp=sharing"}
 }
 
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[InlineKeyboardButton(f"{v['name']} - {v['price']}$", callback_data=k)] for k,v in FILES.items()]
-    await update.message.reply_text("مرحبا في متجر Leen 🌸\nاختاري الكتاب:", reply_markup=InlineKeyboardMarkup(keyboard))
+    if context.args:
+        product_key = context.args[0]
+        if product_key in FILES:
+            product = FILES[product_key]
+            await update.message.reply_text(f"طلبك جاهز يا بطل 💛\n\n{product['name']} - {product['price']}\n\nجاري الإرسال...")
+            await update.message.reply_document(document=product['link'], caption=f"شكراً لشرائك من LEEN SHOP ✨")
+            return
+
+    keyboard = []
+    for key, item in FILES.items():
+        keyboard.append([InlineKeyboardButton(f"{item['name']} - {item['price']}", callback_data=key)])
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text('أهلاً بك في LEEN SHOP 👑\nاختر منتجك الرقمي:', reply_markup=reply_markup)
 
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    item = FILES[query.data]
-    text = f"📚 {item['name']}\n💵 السعر: {item['price']}$ USDT\n\n🔸 حولي المبلغ على محفظة TRC20:\n`{WALLET}`\n\nبعد التحويل أرسلي صورة الإيصال هنا"
-    await query.edit_message_text(text, parse_mode='Markdown')
-    context.user_data['waiting_for'] = query.data
 
-async def photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if 'waiting_for' in context.user_data:
-        item = FILES[context.user_data['waiting_for']]
-        await update.message.reply_text(f"تم استلام الإيصال ✅\nجاري التحقق...\n\n📥 رابط التحميل:\n{item['link']}")
-        context.user_data.clear()
-    else:
-        await update.message.reply_text("اضغطي /start أول")
+    product_key = query.data
+    product = FILES[product_key]
 
-app = Application.builder().token(TOKEN).build()
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(button))
-app.add_handler(MessageHandler(filters.PHOTO, photo))
-app.run_polling()
+    await query.edit_message_text(text=f"طلبك: {product['name']} - {product['price']}\n\nجاري الإرسال...")
+    await context.bot.send_document(chat_id=query.message.chat_id, document=product['link'], caption=f"شكراً لشرائك من LEEN SHOP ✨")
+
+def main():
+    application = Application.builder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CallbackQueryHandler(button))
+    application.run_polling()
+
+if __name__ == "__main__":
+    main()
