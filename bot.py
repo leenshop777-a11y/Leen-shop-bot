@@ -6,7 +6,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 # ========== الإعدادات - عدّل هنا فقط ==========
-BOT_TOKEN = "حط_التوكن_حقك_هنا" # من BotFather
+BOT_TOKEN = "8432218715:AAGCaMGfnGc6pXfiOUf2reCRu1ThzvENGk4 # من BotFather
 TRON_ADDRESS = "TNLtMGhQbTWpHkwKiWuAMMC95hhe6e1Qkn"
 BOT_USERNAME = "Leenshop777bot"
 
