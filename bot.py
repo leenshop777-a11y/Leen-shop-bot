@@ -2,12 +2,11 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-TOKEN = "8432218715:AAGCaMGfnGc6pXfi0Uf2reC6pXfi0Uf2reCRu1ThzvENGk4"
+TOKEN = "8432218715:AAGCaMGfnGc6pXfi0Uf2reCRu1ThzvENGk4"
 
-# منتجاتك الجاهزة فقط
 FILES = {
-    "planner2026": {"name": "Royal 90-Day Business Planner 2026", "price": "$37", "link": "https://drive.google.com/file/d/10JqPCJ4DsRn_8grXNZR2Y0KswypHF4YI/view?usp=sharing"},
-    "slim7days": {"name": "7 Days Slim Secret", "price": "$27", "link": "https://drive.google.com/file/d/1ZD9XWSD1jmczhJix7DbZ_EJ0ccAvyLRt/view?usp=sharing"}
+    "planner2026": {"name": "Royal 90-Day Business Planner 2026", "price": "$37", "link": "https://drive.google.com/file/d/10JqPCJ4DsRn_8grXNZR2Y0KswypHF4YI/view?usp=drivesdk"},
+    "slim7days": {"name": "7 Days Slim Secret", "price": "$27", "link": "https://drive.google.com/file/d/1ZD9XWSD1jmczhJix7DbZ_EJ0ccAvyLRt/view?usp=drivesdk"}
 }
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
