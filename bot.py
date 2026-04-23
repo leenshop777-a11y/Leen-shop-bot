@@ -9,11 +9,16 @@ from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
+# الإعدادات الأساسية
 TOKEN = os.getenv("TOKEN")
-WEBHOOK_URL = "https://leen-shop-bot.onrender.com"
 WALLET = "TNLtMGhQbTWpHkwKiWuAMMC95hhe6e1Qkn"
 
 app = Flask(__name__)
+
+# مسار بسيط للتأكد أن السيرفر Live
+@app.route('/')
+def home():
+    return "Bot is Running Live!"
 
 # قاعدة بيانات
 conn = sqlite3.connect("store.db", check_same_thread=False)
@@ -39,6 +44,7 @@ PRODUCTS = {
            "link": "https://drive.google.com/file/d/1ZD9XWSD1jmczhJix7DbZ_EJ0ccAvyLRt/view"}
 }
 
+# إعداد البوت
 application = Application.builder().token(TOKEN).build()
 
 def generate_price(base):
@@ -51,7 +57,18 @@ def create_order(chat_id, product_id):
     conn.commit()
     return price
 
-def get_transactions():
-    try:
-        url = f"https://apilist.tronscan.org/api/transaction?address={WALLET}"
-        return requests.get(url, timeout=10).json
+# (هنا تضع بقية الدوال الخاصة بالتعامل مع العمليات و tronscan كما كانت في كودك)
+
+async def start_bot():
+    """تشغيل البوت بنظام Polling في الخلفية"""
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling()
+
+if __name__ == "__main__":
+    # تشغيل البوت في خيط (Thread) منفصل لكي لا يتوقف Flask
+    threading.Thread(target=lambda: asyncio.run(start_bot())).start()
+    
+    # تشغيل Flask على المنفذ الذي يحدده Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
