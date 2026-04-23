@@ -8,7 +8,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 TOKEN = os.getenv("TOKEN")
-WEBHOOK_URL = "https://leen-shop-bot-3.onrender.com"
+WEBHOOK_URL = "https://leen-shop-bot-.onrender.com"
 WALLET = "TNLtMGhQbTWpHkwKiWuAMMC95hhe6e1Qkn"
 
 app = Flask(__name__)
