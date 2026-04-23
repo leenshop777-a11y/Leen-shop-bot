@@ -1,63 +1,55 @@
 import os
-import requests
+import threading
 from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
-import threading
 
-# إعداد Flask للعمل على ريندر
+# --- إعداد خادم الويب (Flask) ---
 app = Flask(__name__)
 
 @app.route('/')
 def home():
     return "Leen Shop Bot is Running!"
 
-# الحصول على التوكن من إعدادات ريندر
-TOKEN = os.getenv("TOKEN")
+def run_flask():
+    # Render يطلب تشغيل السيرفر على بورت معين
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
 
-# دالة لجلب سعر صرف الدولار مقابل الريال السعودي
-def get_exchange_rate():
-    try:
-        # استخدام API مجاني وموثوق
-        url = "https://api.exchangerate-api.com/v4/latest/USD"
-        response = requests.get(url, timeout=10)
-        data = response.json()
-        return data.get('rates', {}).get('SAR', 3.75)
-    except Exception as e:
-        print(f"Error fetching rate: {e}")
-        return 3.75  # سعر افتراضي في حال فشل الاتصال
-
-# دالة الأمر /start
+# --- إعداد البوت (Telegram Bot) ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    rate = get_exchange_rate()
-    price_usd = 47
-    price_sar = round(price_usd * rate, 2)
-    
-    welcome_msg = (
-        f"مرحباً بك في Leen Shop! 🌸\n\n"
-        f"سعر الكتاب الرقمي هو: {price_usd} دولار\n"
-        f"ما يعادل تقريباً: {price_sar} ريال سعودي\n\n"
-        f"لإتمام الشراء أو الاستفسار، نحن هنا لخدمتك."
+    user_name = update.effective_user.first_name
+    message = (
+        f"أهلاً بك يا {user_name} في متجر لين (Leen Shop) 🌸\n\n"
+        "كتابنا الرقمي متاح الآن بسعر مميز:\n"
+        "💰 السعر بالدولار: 47$\n"
+        "🇸🇦 السعر بالريال السعودي: 176 ريال\n\n"
+        "لطلب الكتاب أو الاستفسار، نحن هنا لخدمتك!"
     )
-    await update.message.reply_text(welcome_msg)
+    await update.message.reply_text(message)
 
-# تشغيل البوت
-def run_bot():
-    if not TOKEN:
-        print("خطأ: لم يتم العثور على TOKEN في إعدادات ريندر!")
+def main_bot():
+    # جلب التوكن من إعدادات ريندر (Environment Variables)
+    token = os.environ.get("TOKEN")
+    if not token:
+        print("خطأ: لم يتم العثور على TOKEN في الإعدادات!")
         return
-        
-    application = Application.builder().token(TOKEN).build()
+
+    # بناء تطبيق البوت
+    application = Application.builder().token(token).build()
+
+    # إضافة الأوامر
     application.add_handler(CommandHandler("start", start))
-    
+
+    # بدء الاستماع للرسائل
     print("البوت بدأ الاستماع للرسائل...")
     application.run_polling()
 
-if __name__ == "__main__":
-    # تشغيل البوت في "خيط" منفصل لكي لا يتصادم مع Flask
-    threading.Thread(target=run_bot).start()
-    
-    # تشغيل Flask على المنفذ الذي يطلبه ريندر
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
-    
+if __name__ == '__main__':
+    # 1. تشغيل Flask في خيط منفصل (Thread) لكي لا يتوقف البوت
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+
+    # 2. تشغيل البوت في الخيط الرئيسي
+    main_bot()
