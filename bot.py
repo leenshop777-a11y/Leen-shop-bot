@@ -32,12 +32,55 @@ PRODUCTS = {
     }
 }
 
-# --- Start ---
+# =========================
+# 🧠 SMART MESSAGE HANDLER (NEW)
+# =========================
+async def smart_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text.lower()
+    selected = context.user_data.get('selected_prod')
+
+    # --- NO PRODUCT SELECTED ---
+    if not selected:
+
+        # 💰 Price objection
+        if "price" in text or "expensive" in text or "غالي" in text:
+            await update.message.reply_text(
+                "💡 I understand 👍\n\n"
+                "This is a limited 48-hour launch offer.\n"
+                "After that, price increases.\n\n"
+                "Most users start and see value after first week.\n\n"
+                "👉 Type /start to view the system"
+            )
+            return
+
+        # 🤔 hesitation
+        if "not sure" in text or "help" in text or "confused" in text:
+            await update.message.reply_text(
+                "💡 No problem 👍\n\n"
+                "You can preview the system first.\n"
+                "Then decide if it fits you.\n\n"
+                "👉 Type /start to continue"
+            )
+            return
+
+        # 🔄 general fallback
+        await update.message.reply_text(
+            "👆 Please choose a product first.\n\nType /start to begin."
+        )
+        return
+
+    # --- USER HAS PRODUCT BUT CHATTER ---
+    await update.message.reply_text(
+        "💡 If you're ready, send TXID after payment.\n\n"
+        "Or type /start to choose another option."
+    )
+
+# --- START ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🗓️ 90-Day System ($37)", callback_data='prod2')],
         [InlineKeyboardButton("📄 Free Sample Preview", callback_data='sample')],
-        [InlineKeyboardButton("⏳ OFFER ENDING SOON", callback_data='urgency')]
+        [InlineKeyboardButton("⏳ OFFER STATUS", callback_data='urgency')]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -50,14 +93,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⚡ Stay focused\n"
         "⚡ Execute daily without overthinking\n\n"
         "⏳ LIMITED 48-HOUR LAUNCH OFFER\n"
-        "After that → price increases\n\n"
         "💰 Current price: $37\n\n"
         "👇 Choose below:"
     )
 
     await update.message.reply_text(msg, reply_markup=reply_markup)
 
-# --- Handle buttons ---
+# --- BUTTON HANDLER ---
 async def handle_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -69,53 +111,36 @@ async def handle_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "📄 SAMPLE PREVIEW\n\n"
             "✔ Daily structure sample\n"
-            "✔ Habit tracking preview\n"
-            "✔ Execution layout example\n\n"
-            f"👉 Download sample:\n{SAMPLE_LINK}\n\n"
-            "⚠ This is only a small preview.\n\n"
-            "The full system includes:\n"
-            "✔ Full 90-day structure\n"
-            "✔ Complete execution system\n"
-            "✔ Real discipline framework\n\n"
-            "👉 If you're serious, unlock full version now."
+            "✔ Habit tracking preview\n\n"
+            f"👉 Download:\n{SAMPLE_LINK}\n\n"
+            "💡 Full system is much more powerful."
         )
         return
 
     # --- URGENCY ---
     if prod_id == "urgency":
         await query.edit_message_text(
-            "⏳ OFFER ENDING SOON\n\n"
-            "⚡ 48-Hour Launch Offer Active\n\n"
-            "After it ends:\n"
-            "❌ Price increases\n"
-            "❌ Offer removed\n\n"
-            "💰 Current price is temporary\n\n"
-            "👉 Act now before it's gone"
+            "⏳ LIMITED OFFER\n\n"
+            "⚡ 48-hour launch active\n"
+            "After that price increases.\n\n"
+            "👉 Recommended to act now."
         )
         return
 
-    # --- PRODUCT FLOW ---
+    # --- PRODUCT ---
     context.user_data['selected_prod'] = prod_id
     prod = PRODUCTS[prod_id]
 
     msg = (
         f"🔥 {prod['name_en']}\n\n"
-        "This is not a PDF.\n"
-        "This is a complete life organization system.\n\n"
-        "What you get:\n"
+        "This is a full execution system.\n\n"
         "✔ Daily structure\n"
-        "✔ Habit tracking system\n"
-        "✔ Focus & discipline framework\n\n"
-        "Results:\n"
-        "→ More focus\n"
-        "→ Less procrastination\n"
-        "→ Real execution\n\n"
-        "🔥 Already used by multiple users\n\n"
-        f"💰 Price: {prod['price']} USDT (TRC20)\n\n"
+        "✔ Discipline framework\n"
+        "✔ Focus system\n\n"
+        f"💰 Price: {prod['price']} USDT\n\n"
         "⏳ Limited 48-hour offer\n\n"
-        f"Send payment to wallet:\n\n"
-        f"`{MY_WALLET}`\n\n"
-        "👉 After payment, send TXID below"
+        f"Wallet:\n`{MY_WALLET}`\n\n"
+        "👉 Send TXID after payment"
     )
 
     await query.edit_message_text(text=msg, parse_mode='Markdown')
@@ -129,38 +154,31 @@ async def process_txid(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Please select a product first.")
         return
 
-    await update.message.reply_text("🔄 Verifying payment...")
+    await update.message.reply_text("🔄 Verifying...")
 
     if len(txid) > 20:
         await asyncio.sleep(2)
 
         prod = PRODUCTS[prod_id]
 
-        success_msg = (
-            "✅ PAYMENT CONFIRMED!\n\n"
-            f"🎁 Download your system:\n{prod['link']}\n\n"
-            "👑 You now have access.\n\n"
-            "Most people buy and never use.\n\n"
-            "If you follow this system:\n"
-            "→ Your life can change in 90 days\n\n"
-            "⚡ Start today."
-        )
-
-        await update.message.reply_text(success_msg)
-    else:
         await update.message.reply_text(
-            "❌ Invalid TXID\n\n"
-            "👉 Please check and try again."
+            "✅ PAYMENT CONFIRMED!\n\n"
+            f"🎁 Download:\n{prod['link']}\n\n"
+            "⚡ Start immediately and stay consistent."
         )
+    else:
+        await update.message.reply_text("❌ Invalid TXID")
 
-# --- Main ---
+# --- MAIN ---
 def main():
     token = os.environ.get("TOKEN")
     application = Application.builder().token(token).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(handle_selection))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, process_txid))
+
+    # 🧠 SMART SYSTEM (important)
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, smart_handler))
 
     threading.Thread(target=run_flask, daemon=True).start()
 
