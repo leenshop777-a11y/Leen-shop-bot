@@ -25,13 +25,8 @@ SAMPLE_LINK = "https://drive.google.com/file/d/1bdrOs0poBRfqiEma0Sdy4DXJXANMpY8z
 
 # --- Products ---
 PRODUCTS = {
-    "prod1": {
-        "name_en": "From Zero to $1000",
-        "price": 47,
-        "link": "https://drive.google.com/file/d/1VNKROsJLSddq3wVXGreexfZk7GxXKSWb/view?usp=drivesdk"
-    },
     "prod2": {
-        "name_en": "Royal 90-Day Digital Success Planner",
+        "name_en": "Royal 90-Day Execution System",
         "price": 37,
         "link": "https://drive.google.com/file/d/10JqPCJ4DsRn_8grXNZR2Y0KswypHF4YI/view?usp=drivesdk"
     }
@@ -40,23 +35,24 @@ PRODUCTS = {
 # --- Start ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("📚 Zero to $1000 ($47)", callback_data='prod1')],
         [InlineKeyboardButton("🗓️ 90-Day System ($37)", callback_data='prod2')],
         [InlineKeyboardButton("📄 Free Sample Preview", callback_data='sample')],
-        [InlineKeyboardButton("⏳ LIMITED OFFER STATUS", callback_data='urgency')]
+        [InlineKeyboardButton("⏳ OFFER ENDING SOON", callback_data='urgency')]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     msg = (
         "👑 Welcome to Leen Shop\n\n"
-        "We don’t sell PDFs… we sell execution systems.\n\n"
-        "⚡ 90-Day structured system for focus & productivity\n"
-        "⚡ Built for real results, not theory\n\n"
-        "⏳ LIMITED TIME OFFER: 48 HOURS ONLY\n"
-        "After that, prices return to normal\n\n"
-        "💰 Today: $19–$37 launch price\n\n"
-        "👇 Choose your option below:"
+        "This is not a planner…\n"
+        "This is a complete execution system.\n\n"
+        "⚡ Build discipline\n"
+        "⚡ Stay focused\n"
+        "⚡ Execute daily without overthinking\n\n"
+        "⏳ LIMITED 48-HOUR LAUNCH OFFER\n"
+        "After that → price increases\n\n"
+        "💰 Current price: $37\n\n"
+        "👇 Choose below:"
     )
 
     await update.message.reply_text(msg, reply_markup=reply_markup)
@@ -73,21 +69,28 @@ async def handle_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "📄 SAMPLE PREVIEW\n\n"
             "✔ Daily structure sample\n"
-            "✔ Habit tracker preview\n"
-            "✔ System layout example\n\n"
-            f"👉 Download:\n{SAMPLE_LINK}\n\n"
-            "💰 Full system available after purchase."
+            "✔ Habit tracking preview\n"
+            "✔ Execution layout example\n\n"
+            f"👉 Download sample:\n{SAMPLE_LINK}\n\n"
+            "⚠ This is only a small preview.\n\n"
+            "The full system includes:\n"
+            "✔ Full 90-day structure\n"
+            "✔ Complete execution system\n"
+            "✔ Real discipline framework\n\n"
+            "👉 If you're serious, unlock full version now."
         )
         return
 
     # --- URGENCY ---
     if prod_id == "urgency":
         await query.edit_message_text(
-            "⏳ LIMITED OFFER STATUS\n\n"
-            "⚡ Active: 48-Hour Launch Offer\n"
-            "⚡ After timer ends → price increases\n\n"
-            "💰 Status: ACTIVE NOW\n\n"
-            "👉 Recommended to act now."
+            "⏳ OFFER ENDING SOON\n\n"
+            "⚡ 48-Hour Launch Offer Active\n\n"
+            "After it ends:\n"
+            "❌ Price increases\n"
+            "❌ Offer removed\n\n"
+            "💰 Current price is temporary\n\n"
+            "👉 Act now before it's gone"
         )
         return
 
@@ -97,12 +100,22 @@ async def handle_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     msg = (
         f"🔥 {prod['name_en']}\n\n"
+        "This is not a PDF.\n"
+        "This is a complete life organization system.\n\n"
+        "What you get:\n"
+        "✔ Daily structure\n"
+        "✔ Habit tracking system\n"
+        "✔ Focus & discipline framework\n\n"
+        "Results:\n"
+        "→ More focus\n"
+        "→ Less procrastination\n"
+        "→ Real execution\n\n"
+        "🔥 Already used by multiple users\n\n"
         f"💰 Price: {prod['price']} USDT (TRC20)\n\n"
-        "⚡ Instant access after payment\n"
-        "⚡ Limited offer (48 hours only)\n\n"
+        "⏳ Limited 48-hour offer\n\n"
         f"Send payment to wallet:\n\n"
         f"`{MY_WALLET}`\n\n"
-        "👉 After payment, send TXID to verify automatically"
+        "👉 After payment, send TXID below"
     )
 
     await query.edit_message_text(text=msg, parse_mode='Markdown')
@@ -125,16 +138,19 @@ async def process_txid(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         success_msg = (
             "✅ PAYMENT CONFIRMED!\n\n"
-            f"🎁 Download link:\n{prod['link']}\n\n"
-            "⚡ Save your file now\n"
-            "👑 Thank you for your purchase!"
+            f"🎁 Download your system:\n{prod['link']}\n\n"
+            "👑 You now have access.\n\n"
+            "Most people buy and never use.\n\n"
+            "If you follow this system:\n"
+            "→ Your life can change in 90 days\n\n"
+            "⚡ Start today."
         )
 
         await update.message.reply_text(success_msg)
     else:
         await update.message.reply_text(
             "❌ Invalid TXID\n\n"
-            "👉 Please double check and try again."
+            "👉 Please check and try again."
         )
 
 # --- Main ---
