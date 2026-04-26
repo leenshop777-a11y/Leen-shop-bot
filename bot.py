@@ -1,7 +1,7 @@
 import os
 import threading
 import requests
-import time
+import asyncio
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
@@ -37,7 +37,7 @@ PRODUCTS = {
     }
 }
 
-# --- Start (HIGH CONVERSION) ---
+# --- Start ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("📚 Zero to $1000 ($47)", callback_data='prod1')],
@@ -119,7 +119,8 @@ async def process_txid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔄 Verifying payment...")
 
     if len(txid) > 20:
-        time.sleep(2)
+        await asyncio.sleep(2)
+
         prod = PRODUCTS[prod_id]
 
         success_msg = (
